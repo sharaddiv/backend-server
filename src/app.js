@@ -1,51 +1,60 @@
-// server ko create karna 
-const express = require("express")
+const express = require('express');
+const noteModel = require("./models/note.model")
 
 const app = express()
-app.use(express.json())
+app.use(express.json());
 
-
-const notes = []
-
-// post / notes
-app.post('/notes', (req, res) => {
-    notes.push(req.body)
+app.post("/notes", async(req, res) => {
+  
+    const data = req.body
+    await noteModel.create({
+        title: data.title,
+        description: data.description,
+    })
 
     res.status(201).json({
-        message: "note created succsesfully"
+        message: "Note Created"
     })
+
 })
 
-app.get('/notes' , (req , res) => {
-     res.status(200).json({
-        message: "notes fetched succsesfully" ,
-        notes: notes
-     })
-})
 
-app.delete('/notes/:index', (req, res) => {
+app.get('/notes' , async (req, res) => {
 
-    const index = req.params.index
-
-    delete notes[ index ]
+    const notes = await noteModel.find()
 
     res.status(200).json({
-        message: "note deleted succsesfully"
+        message: "Notes fetched Succsessfully" , 
+        notes: notes
+    }) 
+
+})
+
+app.delete('/notes/:id' , async (req, res) =>{
+
+    const id = req.params.id
+
+    await noteModel.findOneAndDelete({
+        _id: id
+    })
+
+     
+    res.status(200).json({
+        message: "Note Deleted Succssesfully"
     })
 
 })
 
-app.patch('/notes/:index', (req, res) => {
 
-    const index = req.params.index
+app.patch('/notes/:id' , async(req, res) => {  
+    const id = req.params.id
     const description = req.body.description
 
-    notes[ index ].description = description
+    await noteModel.findOneAndUpdate({_id: id}, {description: description})
 
-    res.status(200).json({
-        message: "note updated succsefully"
+    res.status(201).json({
+        message: "Note Updated Succsesfully"
     })
-
 })
 
 module.exports = app
